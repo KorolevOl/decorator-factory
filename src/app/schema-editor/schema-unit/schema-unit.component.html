@@ -1,0 +1,20 @@
+<app-text-unit
+  *ngIf="this.config.unitType === 'text-unit'"
+  [config]="config"
+></app-text-unit>
+
+<app-start-unit
+  *ngIf="this.config.unitType === 'start-unit'"
+  [config]="config"
+></app-start-unit>
+
+<app-if-unit
+  *ngIf="this.config.unitType === 'if-unit'"
+  [config]="config"
+></app-if-unit>
+
+<app-do-unit
+  *ngIf="this.config.unitType === 'do-unit'"
+  [config]="config"
+></app-do-unit>
+
