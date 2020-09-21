@@ -17,8 +17,6 @@ export class SchemaEditorComponent implements OnInit {
 
   ngOnInit(): void {
     this.schemaEditorRef.nativeElement.oncontextmenu = () => false;
-    // const datsSchemaArray = this.dataService.getDatsSchemaArray();
-    // console.log('arr', this.arr);
   }
 
 }

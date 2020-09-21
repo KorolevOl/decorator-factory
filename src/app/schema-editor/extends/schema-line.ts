@@ -65,7 +65,6 @@ export const SchemaLine = () => {
         const svgNS = this.svgNative.namespaceURI;
         this.lineNativeElement = document.createElementNS(svgNS, 'line');
         this.svgNative.appendChild(this.lineNativeElement);
-        console.log('this.lineNativeElement', this.lineNativeElement);
       }
 
 
