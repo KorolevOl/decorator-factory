@@ -1,4 +1,4 @@
-import {fromEvent, Subscription} from 'rxjs';
+import {fromEvent, Observable, Subject, Subscription} from 'rxjs';
 import {ElementRef} from '@angular/core';
 import {first} from 'rxjs/operators';
 import {SchemaUnitConfig} from './schema-unit-config';
@@ -7,17 +7,62 @@ export type MovableParam = 'on' | 'off';
 
 export const Movable = () => {
   return (Constructor: any): any =>  {
-    return class extends Constructor {
+    return class extends Constructor{
       constructor( ...args: any[] ) {
         super(...args);
       }
 
-      public isMoving = false;
+      public isMoving: boolean ;
       private mouseDown: Subscription;
+      public onMove: Observable<any>;
+      public onMoveSubject = new Subject();
+
+      // Верхний правый угол
+      public xLeftBottom: number;
+      public yLeftBottom: number;
+
+      // Верхний левый угол
+      public xLeftTop: number;
+      public yLeftTop: number;
+
+      // Сверху в центре
+      public xCenterTop: number;
+      public yCenterTop: number;
+
+      // Снизу в центре
+      public xCenterBottom: number;
+      public yCenterBottom: number;
+
+      public height: number;
+      public width: number;
 
       element: ElementRef;
       config: SchemaUnitConfig;
       schemaEditorRef: ElementRef;
+
+      protected calcDimensions(): void {
+        this.height = this.element.nativeElement.offsetHeight;
+        this.width = this.element.nativeElement.offsetWidth;
+      }
+
+      protected calcAllCoordinates(x: number, y: number): void {
+        this.xLeftTop = x;
+        this.yLeftTop = y;
+
+        this.xCenterTop = this.xLeftTop + this.width / 2;
+        this.yCenterTop = this.yLeftTop;
+
+        this.xLeftBottom = this.xLeftTop;
+        this.yLeftBottom = this.yLeftTop + this.height;
+
+        this.xCenterBottom = this.xCenterTop;
+        this.yCenterBottom = this.yLeftBottom;
+      }
+
+      protected render(): void {
+        this.element.nativeElement.style.top = this.yLeftTop + 'px';
+        this.element.nativeElement.style.left = this.xLeftTop + 'px';
+      }
 
       public movable(movableParam: MovableParam = 'on'): void {
         switch (movableParam) {
@@ -32,31 +77,33 @@ export const Movable = () => {
         }
       }
 
+      protected updateCoordinates(x: number, y: number): void {
+        this.calcAllCoordinates(x, y);
+        this.render();
+      }
+
       public move(): void {
-        const nativeParentElement = this.schemaEditorRef.nativeElement;
+        const nativeParentElement: HTMLElement = this.schemaEditorRef.nativeElement;
         const nativeElement: HTMLElement = this.element.nativeElement;
 
-        nativeElement.style.left = this.config.coordinates.x + 'px';
-        nativeElement.style.top = this.config.coordinates.y + 'px';
+        this.calcDimensions();
+        this.updateCoordinates(this.config.coordinates.x, this.config.coordinates.y);
 
-
-        this.mouseDown = fromEvent(nativeElement, 'mousedown').subscribe((eD: MouseEvent) => {
+        this.mouseDown = fromEvent(nativeElement, 'mousedown').subscribe((mouseClick: MouseEvent) => {
           this.isMoving = true;
-
           nativeElement.style.cursor = 'grabbing';
+          nativeElement.classList.add('moving');
 
-          const x = nativeElement.offsetLeft;
-          const y = nativeElement.offsetTop;
+          const yDelta = mouseClick.y - this.yLeftTop;
+          const xDelta = mouseClick.x - this.xLeftTop;
 
-          const xDelta = eD.x - x;
-          const yDelta = eD.y - y;
+          this.onMove = fromEvent(nativeParentElement, 'mousemove');
+          const move = this.onMove.subscribe((mouseMove: MouseEvent) => {
+            const x = (mouseMove.x - xDelta);
+            const y = (mouseMove.y - yDelta);
 
-          const move = fromEvent(nativeParentElement, 'mousemove').subscribe((e: MouseEvent) => {
-
-            nativeElement.style.left = (e.x - xDelta) + 'px';
-            nativeElement.style.top = (e.y - yDelta) + 'px';
-
-            nativeElement.classList.add('moving');
+            this.updateCoordinates(x, y);
+            this.onMoveSubject.next();
           });
 
           fromEvent(nativeParentElement, 'mouseup').pipe(first()).subscribe(() => {

@@ -1,6 +1,6 @@
-import { Component, ElementRef, Input, OnInit} from '@angular/core';
-import {TextUnitConfig} from '../extends/text-unit-config';
+import {Component, ElementRef, Input, OnInit} from '@angular/core';
 import {SchemaUnit} from '../extends/schema-unit';
+import {StartUnitConfig} from '../extends/schema-unit-config';
 
 @Component({
   selector: 'app-start-unit',
@@ -10,7 +10,7 @@ import {SchemaUnit} from '../extends/schema-unit';
 export class StartUnitComponent
   implements SchemaUnit, OnInit {
 
-  @Input() config: TextUnitConfig;
+  @Input() config: StartUnitConfig;
 
   constructor(public element: ElementRef) {}
 

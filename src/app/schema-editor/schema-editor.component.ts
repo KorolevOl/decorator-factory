@@ -1,5 +1,5 @@
 import {Component, ElementRef, OnInit} from '@angular/core';
-import {testDataSchema} from '../service/data.service';
+import {DataService} from '../service/data.service';
 
 @Component({
   selector: 'app-schema-editor',
@@ -8,11 +8,17 @@ import {testDataSchema} from '../service/data.service';
 })
 export class SchemaEditorComponent implements OnInit {
 
-  public arr = testDataSchema;
-  constructor(public schemaEditorRef: ElementRef) { }
+  public arr = this.dataService.getDataSchemaArray();
+
+  constructor(
+    public schemaEditorRef: ElementRef,
+    public dataService: DataService
+  ) { }
 
   ngOnInit(): void {
     this.schemaEditorRef.nativeElement.oncontextmenu = () => false;
+    // const datsSchemaArray = this.dataService.getDatsSchemaArray();
+    // console.log('arr', this.arr);
   }
 
 }

@@ -1,2 +1,12 @@
-<app-schema-unit *ngFor="let item of arr" [config]="item" [schemaEditorRef]="schemaEditorRef"></app-schema-unit>
-<!--<app-text-unit *ngFor="let item of arr" [config]="item"></app-text-unit>-->
+<svg
+  #svgNative
+  class="schema-editor-svg"
+  viewBox="0 0 800 500"
+></svg>
+
+<app-schema-unit
+  *ngFor="let item of arr"
+  [config]="item"
+  [schemaEditorRef]="schemaEditorRef"
+  [svgNative]="svgNative"
+></app-schema-unit>

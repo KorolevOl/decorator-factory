@@ -1,6 +1,6 @@
 import {Component, ElementRef, Input, OnInit} from '@angular/core';
-import {TextUnitConfig} from '../extends/text-unit-config';
 import {SchemaUnit} from '../extends/schema-unit';
+import {TextUnitConfig} from '../extends/schema-unit-config';
 
 
 @Component({
