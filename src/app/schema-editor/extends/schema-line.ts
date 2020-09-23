@@ -1,73 +1,107 @@
 import {Subject, Subscription} from 'rxjs';
+import {Renderer2} from '@angular/core';
 
 export type SchemaLineParam = 'on' | 'off';
 
-export const SchemaLine = () => {
-  return (Constructor: any): any => {
-    return class extends Constructor {
-      constructor(...args: any[]) {
-        super(...args);
+export function SchemaLineDecorator(Target: any): any {
+
+  const originalNgAfterViewInit = Target.prototype.ngAfterViewInit;
+  Target.prototype.ngAfterViewInit = function(...args): void {
+    this.ngAfterViewInit$.complete();
+    originalNgAfterViewInit?.apply(this, args);
+  };
+
+  const originalNgOnDestroy = Target.prototype.ngOnDestroy;
+  Target.prototype.ngOnDestroy = function(...args): void {
+    this.ngOnDestroy$.complete();
+    originalNgOnDestroy?.apply(this, args);
+  };
+
+  return class extends Target {
+    constructor(...args: any[]) {
+      super(...args);
+
+      if (!this.ngAfterViewInit$) {
+        this.ngAfterViewInit$ = new Subject<any>();
+      }
+      if (!this.ngOnDestroy$) {
+        this.ngOnDestroy$ = new Subject<any>();
       }
 
-      svgNative: HTMLElement;
-      private lineNativeElement: Element;
-      private onMoveSubject: Subject<any>;
-      private onMoveSubscription: Subscription;
+      this.ngAfterViewInit$.subscribe(() => {}, () => {}, () => {
+        this.useLine('on');
+      });
 
-      // private parentOnMoveSubject: Subject<any>;
-      private parentOnMoveSubscription: Subscription;
+      this.ngOnDestroy$.subscribe(() => {}, () => {}, () => {
+        this.useLine('off');
+      });
+    }
 
-      // Сверху в центре
-      private xCenterTop: number;
-      private yCenterTop: number;
+    public ngAfterViewInit$: Subject<any>;
+    public ngOnDestroy$: Subject<any>;
 
-      // Снизу в центре
-      private xCenterBottom: number;
-      private yCenterBottom: number;
+    svgNative: HTMLElement;
+    private lineNativeElement: Element;
+    private onMoveSubject: Subject<any>;
+    private onMoveSubscription: Subscription;
 
+    // private parentOnMoveSubject: Subject<any>;
+    private parentOnMoveSubscription: Subscription;
 
-      public useLine(schemaLineParam: SchemaLineParam = 'on'): void {
-        switch (schemaLineParam) {
-          case 'on': {
-            if (this.config.parent) {
-              this.lineInit();
-            }
-            break;
+    // Сверху в центре
+    private xCenterTop: number;
+    private yCenterTop: number;
+
+    // Снизу в центре
+    private xCenterBottom: number;
+    private yCenterBottom: number;
+
+    renderer: Renderer2;
+
+    public useLine(schemaLineParam: SchemaLineParam = 'on'): void {
+      switch (schemaLineParam) {
+        case 'on': {
+          if (this.config.parent) {
+            this.lineInit();
           }
-          case 'off': {
-            this.onMoveSubscription.unsubscribe();
-            this.parentOnMoveSubscription.unsubscribe();
-            break;
-          }
+          break;
+        }
+        case 'off': {
+          this.onMoveSubscription.unsubscribe();
+          this.parentOnMoveSubscription.unsubscribe();
+          break;
         }
       }
+    }
 
-      lineInit(): void {
-        this.createSvgLine();
+    lineInit(): void {
+      this.createSvgLine();
+      this.updateLineCoordinates();
+      this.onMoveSubscription = this.onMoveSubject.subscribe(() => {
         this.updateLineCoordinates();
-        this.onMoveSubscription = this.onMoveSubject.subscribe(() => {
-          this.updateLineCoordinates();
-        });
-        this.parentOnMoveSubscription = this.config.parent.instance.onMoveSubject.subscribe(() => {
-          this.updateLineCoordinates();
-        });
-      }
+      });
+      this.parentOnMoveSubscription = this.config.parent.instance.onMoveSubject.subscribe(() => {
+        this.updateLineCoordinates();
+      });
+    }
 
-      private updateLineCoordinates(): void {
-        this.lineNativeElement.setAttribute('x1', this.config.parent.instance.xCenterBottom + '');
-        this.lineNativeElement.setAttribute('y1', this.config.parent.instance.yCenterBottom + '');
-        this.lineNativeElement.setAttribute('x2', this.xCenterTop + '');
-        this.lineNativeElement.setAttribute('y2', this.yCenterTop + '');
-      }
+    private updateLineCoordinates(): void {
+      this.renderer.setAttribute(this.lineNativeElement, 'x1', this.config.parent.instance.xCenterBottom + '');
+      this.renderer.setAttribute(this.lineNativeElement, 'y1', this.config.parent.instance.yCenterBottom + '');
+      this.renderer.setAttribute(this.lineNativeElement, 'x2', this.xCenterTop + '');
+      this.renderer.setAttribute(this.lineNativeElement, 'y2', this.yCenterTop + '');
+    }
 
 
-      private createSvgLine(): void {
-        const svgNS = this.svgNative.namespaceURI;
-        this.lineNativeElement = document.createElementNS(svgNS, 'line');
-        this.svgNative.appendChild(this.lineNativeElement);
-      }
+    private createSvgLine(): void {
+      this.lineNativeElement = this.renderer.createElement('line', 'svg');
+      this.renderer.appendChild(this.svgNative, this.lineNativeElement);
+    }
 
 
-    };
   };
-};
+}
+
+export function SchemaLine(): ClassDecorator  {
+  return SchemaLineDecorator;
+}
