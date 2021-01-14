@@ -3,7 +3,8 @@
 Фабрика [src/app/util/decorator-factory.ts](src/app/util/decorator-factory.ts)
 
 #### Примеры использования
-##### Создание декораторов:
+##### Создание декораторов (в самом низу файла):
+
 Декоратор переноса мышкой [src/app/schema-editor/extends/movable.ts](src/app/schema-editor/extends/movable.ts)
 
 Декоратор связей линиями [src/app/schema-editor/extends/schema-line.ts](src/app/schema-editor/extends/schema-line.ts)
