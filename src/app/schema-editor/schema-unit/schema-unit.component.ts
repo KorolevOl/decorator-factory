@@ -1,22 +1,21 @@
-import {AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, Renderer2} from '@angular/core';
-import {AnyUnitConfig} from '../extends/schema-unit-config';
-import {SchemaUnit} from '../extends/schema-unit';
+import { AfterViewInit, Component, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
+import { AnyUnitConfig } from '../extends/schema-unit-config';
+import { SchemaUnit } from '../extends/schema-unit';
 
 
 import {SchemaLine} from '../extends/schema-line';
-import {Movable} from '../extends/movable';
+import { Movable } from '../extends/movable';
 
 
-
-@SchemaLine()
 @Movable()
+@SchemaLine()
 @Component({
   selector: 'app-schema-unit',
   templateUrl: './schema-unit.component.html',
   styleUrls: ['./schema-unit.component.scss']
 })
 export class SchemaUnitComponent
-  implements SchemaUnit, OnInit {
+  implements SchemaUnit, OnInit, AfterViewInit {
 
   @Input() public config: AnyUnitConfig;
   @Input() schemaEditorRef: ElementRef;
@@ -31,9 +30,9 @@ export class SchemaUnitComponent
   ngOnInit(): void {
     const nativeElement: HTMLElement = this.element.nativeElement;
     this.config.instance = this;
-    nativeElement.classList.add('schema-unit');
-    // console.log('renderer', this.renderer);
-    // this.renderer.setStyle(this.element.nativeElement, 'color', 'black');
+    this.renderer.addClass(nativeElement, 'schema-unit');
   }
+
+  ngAfterViewInit(): void {}
 
 }

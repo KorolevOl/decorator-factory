@@ -1,107 +1,84 @@
-import {Subject, Subscription} from 'rxjs';
-import {Renderer2} from '@angular/core';
+import { Subject, Subscription } from 'rxjs';
+import { AfterViewInit, Directive, OnDestroy, Renderer2 } from '@angular/core';
+import { createDecorator, } from '../../util/decorator-factory';
+import { AnyUnitConfig } from './schema-unit-config';
+
 
 export type SchemaLineParam = 'on' | 'off';
 
-export function SchemaLineDecorator(Target: any): any {
+@Directive()
+// tslint:disable-next-line:directive-class-suffix
+export class SchemaLineDecoratorClass implements AfterViewInit, OnDestroy {
+  constructor(...args: any[]) {
+  }
 
-  const originalNgAfterViewInit = Target.prototype.ngAfterViewInit;
-  Target.prototype.ngAfterViewInit = function(...args): void {
-    this.ngAfterViewInit$.complete();
-    originalNgAfterViewInit?.apply(this, args);
-  };
+  public config: AnyUnitConfig;
 
-  const originalNgOnDestroy = Target.prototype.ngOnDestroy;
-  Target.prototype.ngOnDestroy = function(...args): void {
-    this.ngOnDestroy$.complete();
-    originalNgOnDestroy?.apply(this, args);
-  };
+  svgNative: HTMLElement;
+  private lineNativeElement: Element;
+  private onMoveSubject: Subject<any>;
+  private onMoveSubscription: Subscription;
 
-  return class extends Target {
-    constructor(...args: any[]) {
-      super(...args);
+  // private parentOnMoveSubject: Subject<any>;
+  private parentOnMoveSubscription: Subscription;
 
-      if (!this.ngAfterViewInit$) {
-        this.ngAfterViewInit$ = new Subject<any>();
-      }
-      if (!this.ngOnDestroy$) {
-        this.ngOnDestroy$ = new Subject<any>();
-      }
+  // Сверху в центре
+  private xCenterTop: number;
+  private yCenterTop: number;
 
-      this.ngAfterViewInit$.subscribe(() => {}, () => {}, () => {
-        this.useLine('on');
-      });
+  // Снизу в центре
+  private xCenterBottom: number;
+  private yCenterBottom: number;
 
-      this.ngOnDestroy$.subscribe(() => {}, () => {}, () => {
-        this.useLine('off');
-      });
-    }
+  renderer: Renderer2;
 
-    public ngAfterViewInit$: Subject<any>;
-    public ngOnDestroy$: Subject<any>;
-
-    svgNative: HTMLElement;
-    private lineNativeElement: Element;
-    private onMoveSubject: Subject<any>;
-    private onMoveSubscription: Subscription;
-
-    // private parentOnMoveSubject: Subject<any>;
-    private parentOnMoveSubscription: Subscription;
-
-    // Сверху в центре
-    private xCenterTop: number;
-    private yCenterTop: number;
-
-    // Снизу в центре
-    private xCenterBottom: number;
-    private yCenterBottom: number;
-
-    renderer: Renderer2;
-
-    public useLine(schemaLineParam: SchemaLineParam = 'on'): void {
-      switch (schemaLineParam) {
-        case 'on': {
-          if (this.config.parent) {
-            this.lineInit();
-          }
-          break;
+  public useLine(schemaLineParam: SchemaLineParam = 'on'): void {
+    switch (schemaLineParam) {
+      case 'on': {
+        if (this.config?.parent) {
+          this.lineInit();
         }
-        case 'off': {
-          this.onMoveSubscription.unsubscribe();
-          this.parentOnMoveSubscription.unsubscribe();
-          break;
-        }
+        break;
+      }
+      case 'off': {
+        this.onMoveSubscription.unsubscribe();
+        this.parentOnMoveSubscription.unsubscribe();
+        break;
       }
     }
+  }
 
-    lineInit(): void {
-      this.createSvgLine();
+  ngAfterViewInit(): void {
+    this.useLine('on');
+  }
+
+  ngOnDestroy(): void {
+    this.useLine('off');
+  }
+
+  lineInit(): void {
+    this.createSvgLine();
+    this.updateLineCoordinates();
+    this.onMoveSubscription = this.onMoveSubject.subscribe(() => {
       this.updateLineCoordinates();
-      this.onMoveSubscription = this.onMoveSubject.subscribe(() => {
-        this.updateLineCoordinates();
-      });
-      this.parentOnMoveSubscription = this.config.parent.instance.onMoveSubject.subscribe(() => {
-        this.updateLineCoordinates();
-      });
-    }
+    });
+    this.parentOnMoveSubscription = this.config?.parent.instance.onMoveSubject.subscribe(() => {
+      this.updateLineCoordinates();
+    });
+  }
 
-    private updateLineCoordinates(): void {
-      this.renderer.setAttribute(this.lineNativeElement, 'x1', this.config.parent.instance.xCenterBottom + '');
-      this.renderer.setAttribute(this.lineNativeElement, 'y1', this.config.parent.instance.yCenterBottom + '');
-      this.renderer.setAttribute(this.lineNativeElement, 'x2', this.xCenterTop + '');
-      this.renderer.setAttribute(this.lineNativeElement, 'y2', this.yCenterTop + '');
-    }
+  private updateLineCoordinates(): void {
+    this.renderer.setAttribute(this.lineNativeElement, 'x1', this.config.parent.instance.xCenterBottom + '');
+    this.renderer.setAttribute(this.lineNativeElement, 'y1', this.config.parent.instance.yCenterBottom + '');
+    this.renderer.setAttribute(this.lineNativeElement, 'x2', this.xCenterTop + '');
+    this.renderer.setAttribute(this.lineNativeElement, 'y2', this.yCenterTop + '');
+  }
 
+  private createSvgLine(): void {
+    this.lineNativeElement = this.renderer.createElement('line', 'svg');
+    this.renderer.appendChild(this.svgNative, this.lineNativeElement);
+  }
 
-    private createSvgLine(): void {
-      this.lineNativeElement = this.renderer.createElement('line', 'svg');
-      this.renderer.appendChild(this.svgNative, this.lineNativeElement);
-    }
-
-
-  };
 }
 
-export function SchemaLine(): ClassDecorator  {
-  return SchemaLineDecorator;
-}
+export const SchemaLine = createDecorator(SchemaLineDecoratorClass, ['ngAfterViewInit', 'ngOnDestroy']);
