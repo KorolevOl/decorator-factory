@@ -10,7 +10,6 @@ export type MovableParam = 'on' | 'off';
 @Directive()
 // tslint:disable-next-line:directive-class-suffix
 export class MovableDecoratorClass implements AfterViewInit, OnDestroy {
-  constructor( ...args: any[] ) {}
 
   renderer: Renderer2;
 

@@ -1,4 +1,4 @@
-import { Mixin } from 'ts-mixer'; // Для объединения классов (В ts нельзя делать расширение на несколько классов)
+import { Mixin, settings } from 'ts-mixer'; // Для объединения классов (В ts нельзя делать расширение на несколько классов)
 import { Subject } from 'rxjs';
 import { first, share } from 'rxjs/operators';
 
@@ -26,7 +26,7 @@ export function setRxjsHook(funcName: string, Target: any = {}, Decorator: any =
   Target.prototype[funcName] = function(...args): void {
     this[funcName + '$'].next(this, ...args);
     this[funcName + '$'].complete();
-    original?.apply(this, args); // Вызов оригинального метода
+    original?.apply(this, ...args); // Вызов оригинального метода
   };
 }
 
@@ -35,7 +35,9 @@ export function setRxjsHook(funcName: string, Target: any = {}, Decorator: any =
  * @param useClass - Класс из которого нужно сделать декоратор для класса
  * @param hooks - Имена методов на которые нужно повесить хуки
  */
-export function createDecorator(useClass, hooks: string[] = []): any {
+export function createDecorator(useClass, hooks: string[] = [], initFunction?: string): any {
+  settings.initFunction = initFunction ? initFunction : null;
+
   return (): ClassDecorator => {
     // Target - класс к которому применяется декоратор
     return (Target: any): any => {
@@ -53,3 +55,32 @@ export function createDecorator(useClass, hooks: string[] = []): any {
     };
   };
 }
+
+export function log(...args): void {
+  console.log('args', args);
+}
+//
+// export function ClassStatistic(): ClassDecorator {
+//   // Target - класс к которому применяется декоратор
+//   return (Target: any): any => {
+//     return class extends Target{
+//       constructor(...args: any[]) {
+//         super(...args);
+//         // setTimeout(() => {
+//           for (let method in this) {
+//             if (typeof this[method] === 'function'/* || typeof this[qwe] === 'object'*/) {
+//               const targetMethod = Target.prototype[method];
+//               const thisMethod = this[method];
+//               // console.log('method', method, this[method].toString(), typeof this[method]);
+//               Target.prototype[method] = function(...args1): void {
+//                 targetMethod?.apply(this, args1);
+//                 thisMethod?.apply(this, args1);
+//               };
+//             }
+//
+//           }
+//         // });
+//       }
+//     };
+//   };
+// };

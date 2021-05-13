@@ -1,10 +1,11 @@
-import { AfterViewInit, Component, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
+import { AfterViewInit, Component, Directive, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
 import { AnyUnitConfig } from '../extends/schema-unit-config';
 import { SchemaUnit } from '../extends/schema-unit';
 
 
 import {SchemaLine} from '../extends/schema-line';
 import { Movable } from '../extends/movable';
+// import { ClassStatistic } from '../../util/decorator-factory';
 
 
 @Movable()
@@ -14,6 +15,7 @@ import { Movable } from '../extends/movable';
   templateUrl: './schema-unit.component.html',
   styleUrls: ['./schema-unit.component.scss']
 })
+// @ClassStatistic()
 export class SchemaUnitComponent
   implements SchemaUnit, OnInit, AfterViewInit {
 
@@ -36,3 +38,5 @@ export class SchemaUnitComponent
   ngAfterViewInit(): void {}
 
 }
+
+
