@@ -1,6 +1,9 @@
+// noinspection JSUnusedLocalSymbols
+
 export const logProperty = ( target: object, propertyKey: string | symbol) => {
   // tslint:disable-next-line:no-console
   console.info('logProperty', target);
+  // tslint:disable-next-line:no-console
   console.info('logProperty', propertyKey);
 };
 

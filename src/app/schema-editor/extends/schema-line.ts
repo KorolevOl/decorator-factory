@@ -9,8 +9,6 @@ export type SchemaLineParam = 'on' | 'off';
 @Directive()
 // tslint:disable-next-line:directive-class-suffix
 export class SchemaLineDecoratorClass implements AfterViewInit, OnDestroy {
-  constructor(...args: any[]) {
-  }
 
   public config: AnyUnitConfig;
 

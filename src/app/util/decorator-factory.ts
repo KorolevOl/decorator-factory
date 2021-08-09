@@ -34,6 +34,7 @@ export function setRxjsHook(funcName: string, Target: any = {}, Decorator: any =
  * Фабрика декораторов
  * @param useClass - Класс из которого нужно сделать декоратор для класса
  * @param hooks - Имена методов на которые нужно повесить хуки
+ * @param initFunction - Имя функции заменяющей конструктор в декораторе (в Mixin есть проблема с конструкторами, см. док. по Mixin)
  */
 export function createDecorator(useClass, hooks: string[] = [], initFunction?: string): any {
   settings.initFunction = initFunction ? initFunction : null;

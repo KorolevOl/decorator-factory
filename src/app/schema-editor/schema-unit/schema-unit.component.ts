@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import { AfterViewInit, Component, Directive, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
 import { AnyUnitConfig } from '../extends/schema-unit-config';
 import { SchemaUnit } from '../extends/schema-unit';
